@@ -54,8 +54,14 @@ Returns: dict mapping strs to strs
 '''
 def makeCodonDictionary(filename):
     import json
-    return
-
+    openFile=open(filename,"r")
+    text=json.load(openFile)
+    codonToAminoAcidDict={}
+    for aminoAcid,codonList in text.items():
+        for codon in codonList:
+            codon=codon.replace('T','U')
+            codonToAminoAcidDict[codon]=aminoAcid
+    return codonToAminoAcidDict
 
 '''
 generateProtein(codons, codonD)
