@@ -146,8 +146,13 @@ Parameters: list of strs
 Returns: dict mapping strs to ints
 '''
 def aminoAcidDictionary(aaList):
-    return
-
+    aminoAcidDict={}
+    for aminoAcid in aaList:
+        if aminoAcid in aminoAcidDict:
+            aminoAcidDict[aminoAcid]+=1
+        else:
+            aminoAcidDict[aminoAcid]=1
+    return aminoAcidDict
 
 '''
 findAminoAcidDifferences(proteinList1, proteinList2, cutoff)
