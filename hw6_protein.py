@@ -70,8 +70,13 @@ Parameters: list of strs ; dict mapping strs to strs
 Returns: list of strs
 '''
 def generateProtein(codons, codonD):
-    return
-
+    Protein=["Start"]
+    for i in range(1,len(codons)):
+        if codons[i] in ["UAA","UAG","UGA"]:
+            Protein.append("Stop")
+            break
+        Protein.append(codonD[codons[i]])
+    return Protein
 
 '''
 synthesizeProteins(dnaFilename, codonFilename)
