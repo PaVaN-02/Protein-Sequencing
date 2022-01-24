@@ -33,8 +33,18 @@ Parameters: str ; int
 Returns: list of strs
 '''
 def dnaToRna(dna, startIndex):
-    return
-
+    codons=[]
+    RNA=[]
+    dna=dna.replace('T','U')
+    for i in range(startIndex,len(dna),3):
+        codons.append(dna[i:i+3])
+    RNAstartIndex=codons.index("AUG")
+    for i in range(RNAstartIndex,len(codons)):
+        if codons[i] in ["UAA","UAG","UGA"]:
+            RNA.append(codons[i])
+            break
+        RNA.append(codons[i])
+    return RNA
 
 '''
 makeCodonDictionary(filename)
