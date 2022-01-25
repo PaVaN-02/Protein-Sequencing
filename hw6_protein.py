@@ -275,9 +275,9 @@ Returns: None
 def createChart(xLabels, freqList1, label1, freqList2, label2, edgeList=None):
     import matplotlib.pyplot as plt
     w = 0.35  # the width of the bars
-    plt.bar(xLabels, freqList1, width=-w, align='edge', label=label1)
-    plt.bar(xLabels, freqList2, width=w, align='edge', label=label2) 
-    title="Side by Side Bar Plot"
+    plt.bar(xLabels, freqList1, width=-w, align='edge', label=label1,edgecolor=edgeList)
+    plt.bar(xLabels, freqList2, width=w, align='edge', label=label2,edgecolor=edgeList) 
+    title="side by side bar plot"
     plt.xticks(rotation="horizontal")
     plt.legend()
     plt.title(title)
@@ -292,7 +292,15 @@ Parameters: list of strs ; 2D list of values
 Returns: list of strs
 '''
 def makeEdgeList(labels, biggestDiffs):
-    return
+    Colors=[]
+    BigDiffList=[]
+    for i in range(len(biggestDiffs)):
+        BigDiffList.append(biggestDiffs[i][0])
+    for label in labels:
+        if label in BigDiffList:
+            Colors.append("black")
+        else: Colors.append("white")
+    return Colors
 
 
 '''
