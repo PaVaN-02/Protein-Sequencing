@@ -168,23 +168,19 @@ def findAminoAcidDifferences(proteinList1, proteinList2, cutoff):
     aminoDict2=aminoAcidDictionary(proteins2)
     count1=len(proteins1)
     count2=len(proteins2)
-    for amino in aminoDict1:
+    for amino in aminoDict1+aminoDict2:
         if amino not in aminoDict2:
             aminoDict2[amino]=0.0
-        aminoDict1[amino]/=count1
-    for amino in aminoDict2:
         if amino not in aminoDict1:
             aminoDict1[amino]=0.0
+        aminoDict1[amino]/=count1
         aminoDict2[amino]/=count2  
-    for aminoAcid in aminoDict1:
-        if aminoAcid not in["Start","Stop"]:
-                freq1= aminoDict1[aminoAcid]
-                freq2= aminoDict2[aminoAcid]
+    for amino in aminoDict1:
+        if amino not in["Start","Stop"]:
+                freq1= aminoDict1[amino]
+                freq2= aminoDict2[amino]
                 if abs(freq1-freq2)> cutoff:
-                    temp=[]
-                    temp.append(aminoAcid)
-                    temp.append(freq1)
-                    temp.append(freq2)
+                    temp=[amino,freq1,freq2]
                     result.append(temp)
     return result
 
