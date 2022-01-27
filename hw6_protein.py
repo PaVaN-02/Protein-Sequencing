@@ -86,19 +86,25 @@ Returns: 2D list of strs
 '''
 def synthesizeProteins(dnaFilename, codonFilename):
     dna=readFile(dnaFilename)
+    print(len(dna))
     codonDict=makeCodonDictionary(codonFilename)
     proteins=[]
     startValue=0
+    totalMissingbases=0
     while(startValue<len(dna)):
         dnaStr=dna[startValue:]
         dnaStartIndex=dnaStr.find("ATG")
         if (dnaStartIndex<0):
             break
-        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)
+        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)     
         protein=generateProtein(rnaStrand,codonDict)     
         proteins.append(protein)
+        totalMissingbases=totalMissingbases+dnaStartIndex
         startValue+=3*len(protein)+dnaStartIndex
-    print(len(proteins))
+    totalMissingbases=totalMissingbases+len(dna)-startValue
+    print('total number of proteins synthesized:'+(str)(len(proteins)))
+    print('total no of bases:'+(str)(len(dna)))
+    print('total no of unused bases:'+(str)(totalMissingbases))
     return proteins
 
 
@@ -168,23 +174,19 @@ def findAminoAcidDifferences(proteinList1, proteinList2, cutoff):
     aminoDict2=aminoAcidDictionary(proteins2)
     count1=len(proteins1)
     count2=len(proteins2)
-    for amino in aminoDict1:
+    for amino in aminoDict1+aminoDict2:
         if amino not in aminoDict2:
             aminoDict2[amino]=0.0
-        aminoDict1[amino]/=count1
-    for amino in aminoDict2:
         if amino not in aminoDict1:
             aminoDict1[amino]=0.0
+        aminoDict1[amino]/=count1
         aminoDict2[amino]/=count2  
-    for aminoAcid in aminoDict1:
-        if aminoAcid not in["Start","Stop"]:
-                freq1= aminoDict1[aminoAcid]
-                freq2= aminoDict2[aminoAcid]
+    for amino in aminoDict1:
+        if amino not in["Start","Stop"]:
+                freq1= aminoDict1[amino]
+                freq2= aminoDict2[amino]
                 if abs(freq1-freq2)> cutoff:
-                    temp=[]
-                    temp.append(aminoAcid)
-                    temp.append(freq1)
-                    temp.append(freq2)
+                    temp=[amino,freq1,freq2]
                     result.append(temp)
     return result
 
@@ -201,7 +203,7 @@ def displayTextResults(commonalities, differences):
     for protein in commonalities:
         if protein not in unique:
             unique.append(protein)
-        else:continue
+    unique.sort()
     for protein in unique:
         protein.remove("Start")
         protein.remove("Stop")
@@ -243,7 +245,6 @@ def makeAminoAcidLabels(proteinList1, proteinList2):
     for amino in aminoAcids1+aminoAcids2:
         if amino not in uniqueAminoAcids:
             uniqueAminoAcids.append(amino)
-        else: continue
     uniqueAminoAcids.sort()
     return uniqueAminoAcids
 
@@ -277,7 +278,7 @@ def createChart(xLabels, freqList1, label1, freqList2, label2, edgeList=None):
     w = 0.35  # the width of the bars
     plt.bar(xLabels, freqList1, width=-w, align='edge', label=label1,edgecolor=edgeList)
     plt.bar(xLabels, freqList2, width=w, align='edge', label=label2,edgecolor=edgeList) 
-    title="side by side bar plot"
+    title="Side by Side Bar Plot"
     plt.xticks(rotation="horizontal")
     plt.legend()
     plt.title(title)
@@ -327,10 +328,10 @@ def runFullProgram():
 
 # This code runs the test cases to check your work
 if __name__ == "__main__":
-    # print("\n" + "#"*15 + " WEEK 1 TESTS " +  "#" * 16 + "\n")
-    # test.week1Tests()
-    # print("\n" + "#"*15 + " WEEK 1 OUTPUT " + "#" * 15 + "\n")
-    # runWeek1()
+    print("\n" + "#"*15 + " WEEK 1 TESTS " +  "#" * 16 + "\n")
+    test.week1Tests()
+    print("\n" + "#"*15 + " WEEK 1 OUTPUT " + "#" * 15 + "\n")
+    runWeek1()
 
     ## Uncomment these for Week 2 ##
     # print("\n" + "#"*15 + " WEEK 2 TESTS " +  "#" * 16 + "\n")
@@ -339,8 +340,8 @@ if __name__ == "__main__":
     # runWeek2()
 
     ## Uncomment these for Week 3 ##
-    print("\n" + "#"*15 + " WEEK 3 TESTS " +  "#" * 16 + "\n")
-    test.week3Tests()
-    print("\n" + "#"*15 + " WEEK 3 OUTPUT " + "#" * 15 + "\n")
-    runFullProgram()
+    # print("\n" + "#"*15 + " WEEK 3 TESTS " +  "#" * 16 + "\n")
+    # test.week3Tests()
+    # print("\n" + "#"*15 + " WEEK 3 OUTPUT " + "#" * 15 + "\n")
+    # runFullProgram()
     
