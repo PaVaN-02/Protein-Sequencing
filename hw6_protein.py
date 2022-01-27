@@ -86,19 +86,25 @@ Returns: 2D list of strs
 '''
 def synthesizeProteins(dnaFilename, codonFilename):
     dna=readFile(dnaFilename)
+    print(len(dna))
     codonDict=makeCodonDictionary(codonFilename)
     proteins=[]
     startValue=0
+    totalMissingbases=0
     while(startValue<len(dna)):
         dnaStr=dna[startValue:]
         dnaStartIndex=dnaStr.find("ATG")
         if (dnaStartIndex<0):
             break
-        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)
+        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)     
         protein=generateProtein(rnaStrand,codonDict)     
         proteins.append(protein)
+        totalMissingbases=totalMissingbases+dnaStartIndex
         startValue+=3*len(protein)+dnaStartIndex
-    print(len(proteins))
+    totalMissingbases=totalMissingbases+len(dna)-startValue
+    print('total number of proteins synthesized:'+(str)(len(proteins)))
+    print('total no of bases:'+(str)(len(dna)))
+    print('total no of unused bases:'+(str)(totalMissingbases))
     return proteins
 
 
