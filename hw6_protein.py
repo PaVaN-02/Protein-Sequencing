@@ -201,7 +201,7 @@ def displayTextResults(commonalities, differences):
     for protein in commonalities:
         if protein not in unique:
             unique.append(protein)
-        else:continue
+    unique.sort()
     for protein in unique:
         protein.remove("Start")
         protein.remove("Stop")
