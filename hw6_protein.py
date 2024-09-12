@@ -17,7 +17,13 @@ Parameters: str
 Returns: str
 '''
 def readFile(filename):
-    return
+    openFile=open(filename,"r")
+    text=openFile.read()
+    lines=text.split("\n")
+    DNA=""
+    for i in range(len(lines)):
+        DNA+=lines[i]
+    return DNA
 
 
 '''
@@ -27,8 +33,18 @@ Parameters: str ; int
 Returns: list of strs
 '''
 def dnaToRna(dna, startIndex):
-    return
-
+    codons=[]
+    RNA=[]
+    dna=dna.replace('T','U')
+    for i in range(startIndex,len(dna),3):
+        codons.append(dna[i:i+3])
+    RNAstartIndex=codons.index("AUG")
+    for i in range(RNAstartIndex,len(codons)):
+        if codons[i] in ["UAA","UAG","UGA"]:
+            RNA.append(codons[i])
+            break
+        RNA.append(codons[i])
+    return RNA
 
 '''
 makeCodonDictionary(filename)
@@ -38,8 +54,14 @@ Returns: dict mapping strs to strs
 '''
 def makeCodonDictionary(filename):
     import json
-    return
-
+    openFile=open(filename,"r")
+    text=json.load(openFile)
+    codonToAminoAcidDict={}
+    for aminoAcid,codonList in text.items():
+        for codon in codonList:
+            codon=codon.replace('T','U')
+            codonToAminoAcidDict[codon]=aminoAcid
+    return codonToAminoAcidDict
 
 '''
 generateProtein(codons, codonD)
@@ -48,8 +70,13 @@ Parameters: list of strs ; dict mapping strs to strs
 Returns: list of strs
 '''
 def generateProtein(codons, codonD):
-    return
-
+    Protein=["Start"]
+    for i in range(1,len(codons)):
+        if codons[i] in ["UAA","UAG","UGA"]:
+            Protein.append("Stop")
+            break
+        Protein.append(codonD[codons[i]])
+    return Protein
 
 '''
 synthesizeProteins(dnaFilename, codonFilename)
@@ -58,7 +85,27 @@ Parameters: str ; str
 Returns: 2D list of strs
 '''
 def synthesizeProteins(dnaFilename, codonFilename):
-    return
+    dna=readFile(dnaFilename)
+    print(len(dna))
+    codonDict=makeCodonDictionary(codonFilename)
+    proteins=[]
+    startValue=0
+    totalMissingbases=0
+    while(startValue<len(dna)):
+        dnaStr=dna[startValue:]
+        dnaStartIndex=dnaStr.find("ATG")
+        if (dnaStartIndex<0):
+            break
+        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)     
+        protein=generateProtein(rnaStrand,codonDict)     
+        proteins.append(protein)
+        totalMissingbases=totalMissingbases+dnaStartIndex
+        startValue+=3*len(protein)+dnaStartIndex
+    totalMissingbases=totalMissingbases+len(dna)-startValue
+    print('total number of proteins synthesized:'+(str)(len(proteins)))
+    print('total no of bases:'+(str)(len(dna)))
+    print('total no of unused bases:'+(str)(totalMissingbases))
+    return proteins
 
 
 def runWeek1():
@@ -77,7 +124,11 @@ Parameters: 2D list of strs ; 2D list of strs
 Returns: 2D list of strs
 '''
 def commonProteins(proteinList1, proteinList2):
-    return
+    commonProteinsList=[]
+    for list in proteinList1:
+        if list in proteinList2:
+            commonProteinsList.append(list)
+    return commonProteinsList
 
 
 '''
@@ -87,7 +138,11 @@ Parameters: 2D list of strs
 Returns: list of strs
 '''
 def combineProteins(proteinList):
-    return
+    AminoAcids=[]
+    for protein in proteinList:
+        for AminoAcid in protein:
+            AminoAcids.append(AminoAcid)
+    return AminoAcids
 
 
 '''
@@ -97,8 +152,13 @@ Parameters: list of strs
 Returns: dict mapping strs to ints
 '''
 def aminoAcidDictionary(aaList):
-    return
-
+    aminoAcidDict={}
+    for aminoAcid in aaList:
+        if aminoAcid in aminoAcidDict:
+            aminoAcidDict[aminoAcid]+=1
+        else:
+            aminoAcidDict[aminoAcid]=1
+    return aminoAcidDict
 
 '''
 findAminoAcidDifferences(proteinList1, proteinList2, cutoff)
@@ -107,7 +167,28 @@ Parameters: 2D list of strs ; 2D list of strs ; float
 Returns: 2D list of values
 '''
 def findAminoAcidDifferences(proteinList1, proteinList2, cutoff):
-    return
+    result=[]
+    proteins1=combineProteins(proteinList1)
+    proteins2=combineProteins(proteinList2)
+    aminoDict1=aminoAcidDictionary(proteins1)
+    aminoDict2=aminoAcidDictionary(proteins2)
+    count1=len(proteins1)
+    count2=len(proteins2)
+    for amino in aminoDict1+aminoDict2:
+        if amino not in aminoDict2:
+            aminoDict2[amino]=0.0
+        if amino not in aminoDict1:
+            aminoDict1[amino]=0.0
+        aminoDict1[amino]/=count1
+        aminoDict2[amino]/=count2  
+    for amino in aminoDict1:
+        if amino not in["Start","Stop"]:
+                freq1= aminoDict1[amino]
+                freq2= aminoDict2[amino]
+                if abs(freq1-freq2)> cutoff:
+                    temp=[amino,freq1,freq2]
+                    result.append(temp)
+    return result
 
 
 '''
@@ -117,7 +198,27 @@ Parameters: 2D list of strs ; 2D list of values
 Returns: None
 '''
 def displayTextResults(commonalities, differences):
-    return
+    print("The following proteins occurred in both DNA Sequences")
+    unique=[]
+    for protein in commonalities:
+        if protein not in unique:
+            unique.append(protein)
+    unique.sort()
+    for protein in unique:
+        protein.remove("Start")
+        protein.remove("Stop")
+        if len(protein)==1:
+                print(protein[0])
+        if len(protein)>1:
+            proStr=""
+            for i in range(len(protein)-1):
+                proStr=proStr+protein[i]+"-"
+            proStr=proStr+protein[len(protein)-1]
+            print(proStr)             
+    print("The following amino acids occurred at very different rates in the two DNA sequences:")
+    for diff in differences:
+        print(diff[0] +":"+ str(round(diff[1],2))+"% in Seq1, "+str(round(diff[2],2))+"% in Seq2")       
+    return None
 
 
 def runWeek2():
@@ -138,7 +239,14 @@ Parameters: 2D list of strs ; 2D list of strs
 Returns: list of strs
 '''
 def makeAminoAcidLabels(proteinList1, proteinList2):
-    return
+    aminoAcids1=combineProteins(proteinList1)
+    aminoAcids2=combineProteins(proteinList2)
+    uniqueAminoAcids=[]
+    for amino in aminoAcids1+aminoAcids2:
+        if amino not in uniqueAminoAcids:
+            uniqueAminoAcids.append(amino)
+    uniqueAminoAcids.sort()
+    return uniqueAminoAcids
 
 
 '''
@@ -148,7 +256,15 @@ Parameters: list of strs ; 2D list of strs
 Returns: list of floats
 '''
 def setupChartData(labels, proteinList):
-    return
+    aminoAcids=combineProteins(proteinList)
+    aminoAcidDict=aminoAcidDictionary(aminoAcids)
+    aminoAcidFreq=[]
+    for amino in labels:
+        if amino in  aminoAcidDict:
+            aminoAcidFreq.append(aminoAcidDict[amino]/len(aminoAcids))
+        else:
+            aminoAcidFreq.append(0)
+    return aminoAcidFreq
 
 
 '''
@@ -159,7 +275,15 @@ Returns: None
 '''
 def createChart(xLabels, freqList1, label1, freqList2, label2, edgeList=None):
     import matplotlib.pyplot as plt
-    return
+    w = 0.35  # the width of the bars
+    plt.bar(xLabels, freqList1, width=-w, align='edge', label=label1,edgecolor=edgeList)
+    plt.bar(xLabels, freqList2, width=w, align='edge', label=label2,edgecolor=edgeList) 
+    title="Side by Side Bar Plot"
+    plt.xticks(rotation="horizontal")
+    plt.legend()
+    plt.title(title)
+    plt.show()
+    return None
 
 
 '''
@@ -169,7 +293,15 @@ Parameters: list of strs ; 2D list of values
 Returns: list of strs
 '''
 def makeEdgeList(labels, biggestDiffs):
-    return
+    Colors=[]
+    BigDiffList=[]
+    for i in range(len(biggestDiffs)):
+        BigDiffList.append(biggestDiffs[i][0])
+    for label in labels:
+        if label in BigDiffList:
+            Colors.append("black")
+        else: Colors.append("white")
+    return Colors
 
 
 '''
@@ -179,7 +311,17 @@ Parameters: no parameters
 Returns: None
 '''
 def runFullProgram():
-    return
+    HumanProteins=synthesizeProteins("data/human_p53.txt", "data/codon_table.json")
+    ElephantProteins=synthesizeProteins("data/elephant_p53.txt", "data/codon_table.json")
+    Commonalities=commonProteins(HumanProteins,ElephantProteins)
+    Differences=findAminoAcidDifferences(HumanProteins,ElephantProteins,0.005)
+    displayTextResults(Commonalities,Differences) 
+    DistinctAminoAcids=makeAminoAcidLabels(HumanProteins,ElephantProteins)
+    HumanFreqs=setupChartData(DistinctAminoAcids,HumanProteins)
+    ElephantFreqs=setupChartData(DistinctAminoAcids,ElephantProteins)
+    Edges=makeEdgeList(DistinctAminoAcids,Differences)
+    createChart(DistinctAminoAcids, HumanFreqs, "Human", ElephantFreqs, "Elephant", edgeList=Edges) 
+    return None
 
 
 ### RUN CODE ###
@@ -192,17 +334,14 @@ if __name__ == "__main__":
     runWeek1()
 
     ## Uncomment these for Week 2 ##
-    """
-    print("\n" + "#"*15 + " WEEK 2 TESTS " +  "#" * 16 + "\n")
-    test.week2Tests()
-    print("\n" + "#"*15 + " WEEK 2 OUTPUT " + "#" * 15 + "\n")
-    runWeek2()
-    """
+    # print("\n" + "#"*15 + " WEEK 2 TESTS " +  "#" * 16 + "\n")
+    # test.week2Tests()
+    # print("\n" + "#"*15 + " WEEK 2 OUTPUT " + "#" * 15 + "\n")
+    # runWeek2()
 
     ## Uncomment these for Week 3 ##
-    """
-    print("\n" + "#"*15 + " WEEK 3 TESTS " +  "#" * 16 + "\n")
-    test.week3Tests()
-    print("\n" + "#"*15 + " WEEK 3 OUTPUT " + "#" * 15 + "\n")
-    runFullProgram()
-    """
+    # print("\n" + "#"*15 + " WEEK 3 TESTS " +  "#" * 16 + "\n")
+    # test.week3Tests()
+    # print("\n" + "#"*15 + " WEEK 3 OUTPUT " + "#" * 15 + "\n")
+    # runFullProgram()
+    
