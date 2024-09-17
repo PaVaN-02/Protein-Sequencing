@@ -17,7 +17,13 @@ Parameters: str
 Returns: str
 '''
 def readFile(filename):
-    return
+    openFile=open(filename,"r")
+    text=openFile.read()
+    lines=text.split("\n")
+    DNA=""
+    for i in range(len(lines)):
+        DNA+=lines[i]
+    return DNA
 
 
 '''
@@ -27,8 +33,18 @@ Parameters: str ; int
 Returns: list of strs
 '''
 def dnaToRna(dna, startIndex):
-    return
-
+    codons=[]
+    RNA=[]
+    dna=dna.replace('T','U')
+    for i in range(startIndex,len(dna),3):
+        codons.append(dna[i:i+3])
+    RNAstartIndex=codons.index("AUG")
+    for i in range(RNAstartIndex,len(codons)):
+        if codons[i] in ["UAA","UAG","UGA"]:
+            RNA.append(codons[i])
+            break
+        RNA.append(codons[i])
+    return RNA
 
 '''
 makeCodonDictionary(filename)
@@ -38,8 +54,14 @@ Returns: dict mapping strs to strs
 '''
 def makeCodonDictionary(filename):
     import json
-    return
-
+    openFile=open(filename,"r")
+    text=json.load(openFile)
+    codonToAminoAcidDict={}
+    for aminoAcid,codonList in text.items():
+        for codon in codonList:
+            codon=codon.replace('T','U')
+            codonToAminoAcidDict[codon]=aminoAcid
+    return codonToAminoAcidDict
 
 '''
 generateProtein(codons, codonD)
@@ -48,8 +70,13 @@ Parameters: list of strs ; dict mapping strs to strs
 Returns: list of strs
 '''
 def generateProtein(codons, codonD):
-    return
-
+    Protein=["Start"]
+    for i in range(1,len(codons)):
+        if codons[i] in ["UAA","UAG","UGA"]:
+            Protein.append("Stop")
+            break
+        Protein.append(codonD[codons[i]])
+    return Protein
 
 '''
 synthesizeProteins(dnaFilename, codonFilename)
@@ -58,7 +85,27 @@ Parameters: str ; str
 Returns: 2D list of strs
 '''
 def synthesizeProteins(dnaFilename, codonFilename):
-    return
+    dna=readFile(dnaFilename)
+    print(len(dna))
+    codonDict=makeCodonDictionary(codonFilename)
+    proteins=[]
+    startValue=0
+    totalMissingbases=0
+    while(startValue<len(dna)):
+        dnaStr=dna[startValue:]
+        dnaStartIndex=dnaStr.find("ATG")
+        if (dnaStartIndex<0):
+            break
+        rnaStrand=dnaToRna(dnaStr, dnaStartIndex)     
+        protein=generateProtein(rnaStrand,codonDict)     
+        proteins.append(protein)
+        totalMissingbases=totalMissingbases+dnaStartIndex
+        startValue+=3*len(protein)+dnaStartIndex
+    totalMissingbases=totalMissingbases+len(dna)-startValue
+    print('total number of proteins synthesized:'+(str)(len(proteins)))
+    print('total no of bases:'+(str)(len(dna)))
+    print('total no of unused bases:'+(str)(totalMissingbases))
+    return proteins
 
 
 def runWeek1():
